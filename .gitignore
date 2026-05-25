@@ -1,0 +1,41 @@
+# Unity generated folders
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+UserSettings/
+
+# Memory captures
+MemoryCaptures/
+
+# Asset meta backup
+*.pidb
+*.booproj
+*.svd
+*.pdb
+
+# Visual Studio / Rider
+.vs/
+.vscode/
+.idea/
+
+# Auto generated csproj files
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.tmp
+*.user
+*.userprefs
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Crash reports
+sysinfo.txt
+
+# Unity cache
+Library/
