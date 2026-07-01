@@ -64,7 +64,7 @@ public class FirstPersonController : MonoBehaviour
     {
         HandleCursorLock();
 
-        if (Time.timeScale <= 0f)
+        if (Time.timeScale <= 0f || GameUIController.IsInputBlocking)
         {
             return;
         }
@@ -75,6 +75,11 @@ public class FirstPersonController : MonoBehaviour
 
     private void HandleCursorLock()
     {
+        if (GameUIController.IsInputBlocking)
+        {
+            return;
+        }
+
         if (Time.timeScale > 0f && Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame && Cursor.lockState != CursorLockMode.Locked)
         {
             LockCursor();

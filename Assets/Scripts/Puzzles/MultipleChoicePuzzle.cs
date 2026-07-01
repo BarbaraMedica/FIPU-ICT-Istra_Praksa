@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-public class MultipleChoicePuzzle : PuzzleBase
+public class MultipleChoicePuzzle : PuzzleBase, ITaskPuzzle
 {
     [Header("Question")]
     [TextArea]

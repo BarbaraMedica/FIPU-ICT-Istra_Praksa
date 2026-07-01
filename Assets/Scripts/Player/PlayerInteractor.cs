@@ -43,7 +43,7 @@ public class PlayerInteractor : MonoBehaviour
 
     private void Update()
     {
-        if (Time.timeScale <= 0f)
+        if (Time.timeScale <= 0f || GameUIController.IsInputBlocking)
         {
             currentInteractable = null;
             uiController?.ClearInteractionPrompt();
