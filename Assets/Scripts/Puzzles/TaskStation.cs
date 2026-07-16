@@ -28,6 +28,9 @@ public class TaskStation : MonoBehaviour, IInteractable
     [TextArea]
     public string alreadySolvedMessage = "Ovaj zadatak je vec rijesen.";
 
+    [Tooltip("Trajanje prikaza poruka ovog zadatka (sekundi). 0 = zadano trajanje.")]
+    public float messageDuration = 6f;
+
     [Tooltip("The puzzle this station submits answers to (MultipleChoicePuzzle or TypedAnswerPuzzle).")]
     public PuzzleBase puzzle;
 
@@ -41,7 +44,14 @@ public class TaskStation : MonoBehaviour, IInteractable
         {
             if (!string.IsNullOrWhiteSpace(alreadySolvedMessage))
             {
-                uiController?.ShowMessage(alreadySolvedMessage);
+                if (messageDuration > 0f)
+                {
+                    uiController?.ShowMessage(alreadySolvedMessage, messageDuration);
+                }
+                else
+                {
+                    uiController?.ShowMessage(alreadySolvedMessage);
+                }
             }
             return;
         }

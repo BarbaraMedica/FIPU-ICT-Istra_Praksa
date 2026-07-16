@@ -65,8 +65,13 @@ public class FootstepAudio : MonoBehaviour
 
     private void Update()
     {
-        if (Time.timeScale <= 0f)
+        // Kad je otvoren popup zadatka (ili je igra pauzirana), kretanje je blokirano.
+        // FirstPersonController tada ne zove CharacterController.Move(), pa velocity
+        // zadrzi staru vrijednost > 0 i koraci bi se nastavili okidati. Zato ovdje
+        // izlazimo i resetiramo tajmer da zvuk odmah utihne.
+        if (Time.timeScale <= 0f || GameUIController.IsInputBlocking)
         {
+            stepTimer = 0f;
             return;
         }
 

@@ -51,10 +51,12 @@ public static class Grade4LevelBuilder
     private static readonly Vector2 RoomSize = new Vector2(16f, 13f);
     private static readonly Vector2 AlcoveSize = new Vector2(8f, 5f);
 
-    // Where the three tasks sit inside each room (scattered so finding them feels like searching).
-    private static readonly Vector3 TaskPos1 = new Vector3(0f, 0f, -3.5f);
-    private static readonly Vector3 TaskPos2 = new Vector3(4.5f, 0f, 1.0f);
-    private static readonly Vector3 TaskPos3 = new Vector3(-4.5f, 0f, 3.5f);
+    // Pozicije zadataka - razmjesteni po prostoriji da ih treba potraziti.
+    // Task 1: vidljiv blizu ulaza. Task 2: SAKRIVEN uz namjestaj (trag u sobi vodi do njega).
+    // Task 3: u udaljenom kutu. Kljuc: u sredini kad se sve rijesi.
+    private static readonly Vector3 TaskPos1 = new Vector3(-3.0f, 0f, -3.8f);
+    private static readonly Vector3 TaskPos2 = new Vector3(6.4f, 0f, 4.3f);   // uz istocnu policu (sakriven)
+    private static readonly Vector3 TaskPos3 = new Vector3(-6.2f, 0f, 5.0f);  // udaljeni kut
     private static readonly Vector3 KeyRevealPos = new Vector3(0f, 1.1f, 2.6f); // hovers so it is easy to spot
 
     private enum PuzzleKind
@@ -73,6 +75,7 @@ public static class Grade4LevelBuilder
         public string wrongFeedback;
         public Vector3 localPosition;
         public string hintAfterSolving;
+        public bool hidden; // true = predmet je fizicki nizi/skriven uz namjestaj
     }
 
     private struct RoomConfig
@@ -85,62 +88,71 @@ public static class Grade4LevelBuilder
     }
 
     // -------------------------------------------------------------------------
-    // EDIT HERE: subjects / questions / hints. Placeholder 4th-grade math. Hints
-    // are thematic (no "left/right"); tasks are revealed one at a time, in order.
+    // SADRZAJ RAZINE: zadaci rijecima + geometrija (4. razred). Tragovi u sobi
+    // upucuju gdje potraziti sakriveni predmet. Zadaci se otkrivaju redom.
     // -------------------------------------------------------------------------
     private static readonly RoomConfig[] RoomConfigs =
     {
         new RoomConfig
         {
-            subjectLabel = "Matematika 1 - Zbrajanje i oduzimanje",
+            subjectLabel = "Soba 1 - Zbrajanje i oduzimanje (zadaci rijecima)",
             keyItemName = "Zlatni kljuc",
             keyPickUpMessage = "Uzeo si zlatni kljuc i njime otkljucao vrata!",
             keyRevealLocalPos = KeyRevealPos,
             tasks = new[]
             {
-                MultipleChoice("Koliko je 6 + 7?", "13", new[] { "11", "13", "15" }, "Tocno! 6 + 7 = 13.", TaskPos1,
-                    "Sljedeci zadatak skriva se ondje gdje mudrost stoji na policama s knjigama."),
-                MultipleChoice("Koliko je 15 - 8?", "7", new[] { "6", "7", "9" }, "Tocno! 15 - 8 = 7.", TaskPos2,
-                    "Iduci trag ceka u tihom, udaljenom kutu prostorije."),
-                Typed("Upisi rezultat: 24 + 18 = ?", "42", "Tocno! 24 + 18 = 42.", TaskPos3,
+                Typed("Marko je imao 34 kuglice. Dobio je jos 19 od prijatelja. Koliko kuglica sada ima? Upisi broj.",
+                    "53", "Tocno! 34 + 19 = 53 kuglica.", TaskPos1,
+                    "Prvi trag rijesen! Dobro pogledaj policu s knjigama uz istocni zid - ondje kao da nesto viri."),
+                Typed("U kosari je bilo 50 jabuka. Prodano je 28. Koliko je jabuka ostalo? Upisi broj.",
+                    "22", "Tocno! 50 - 28 = 22 jabuke.", TaskPos2,
+                    "Odlicno! Zadnji zadatak skriva se u tihom, udaljenom kutu prostorije.", hidden: true),
+                MultipleChoice("Ana je ustedjela 45 kuna, a brat 27 kuna. Koliko su zajedno ustedjeli?",
+                    "72", new[] { "62", "72", "82" }, "Tocno! 45 + 27 = 72 kune.", TaskPos3,
                     "Sve je rijeseno! U sredini sobe zasjao je zlatni kljuc - uzmi ga!")
             }
         },
         new RoomConfig
         {
-            subjectLabel = "Matematika 2 - Mnozenje",
+            subjectLabel = "Soba 2 - Mnozenje i dijeljenje (zadaci rijecima)",
             keyItemName = "Srebrni kljuc",
             keyPickUpMessage = "Uzeo si srebrni kljuc i njime otkljucao vrata!",
             keyRevealLocalPos = KeyRevealPos,
             tasks = new[]
             {
-                MultipleChoice("Koliko je 7 x 6?", "42", new[] { "36", "42", "48" }, "Tocno! 7 x 6 = 42.", TaskPos1,
-                    "Sljedeci zadatak skriva se ondje gdje mudrost stoji na policama s knjigama."),
-                Typed("Upisi rezultat: 9 x 4 = ?", "36", "Tocno! 9 x 4 = 36.", TaskPos2,
-                    "Iduci trag ceka u tihom, udaljenom kutu prostorije."),
-                MultipleChoice("Koliko je 8 x 5?", "40", new[] { "35", "40", "45" }, "Tocno! 8 x 5 = 40.", TaskPos3,
+                Typed("U razredu je 6 klupa, a za svakom sjede 4 ucenika. Koliko je ucenika ukupno? Upisi broj.",
+                    "24", "Tocno! 6 x 4 = 24 ucenika.", TaskPos1,
+                    "Bravo! Iduci zadatak skriven je uz namjestaj kraj istocne police - sagni se i potrazi ga."),
+                Typed("Baka je ispekla 48 kolaca i podijelila ih na 6 tanjura jednako. Koliko je kolaca na svakom tanjuru? Upisi broj.",
+                    "8", "Tocno! 48 : 6 = 8 kolaca.", TaskPos2,
+                    "Super! Posljednji zadatak ceka u udaljenom kutu sobe.", hidden: true),
+                MultipleChoice("Trgovac slaze 7 kutija po 5 olovaka. Koliko olovaka ima ukupno?",
+                    "35", new[] { "30", "35", "42" }, "Tocno! 7 x 5 = 35 olovaka.", TaskPos3,
                     "Sve je rijeseno! U sredini sobe zasjao je srebrni kljuc - uzmi ga!")
             }
         },
         new RoomConfig
         {
-            subjectLabel = "Matematika 3 - Dijeljenje i zadaci",
+            subjectLabel = "Soba 3 - Geometrija",
             keyItemName = "Broncani kljuc",
             keyPickUpMessage = "Uzeo si broncani kljuc i njime otkljucao vrata!",
             keyRevealLocalPos = KeyRevealPos,
             tasks = new[]
             {
-                Typed("Upisi rezultat: 56 : 7 = ?", "8", "Tocno! 56 : 7 = 8.", TaskPos1,
-                    "Sljedeci zadatak skriva se ondje gdje mudrost stoji na policama s knjigama."),
-                MultipleChoice("Koliko je 81 : 9?", "9", new[] { "7", "8", "9" }, "Tocno! 81 : 9 = 9.", TaskPos2,
-                    "Iduci trag ceka u tihom, udaljenom kutu prostorije."),
-                Typed("Ana ima 3 vrecice po 12 bombona. Koliko ukupno? Upisi broj.", "36", "Tocno! 3 x 12 = 36.", TaskPos3,
+                MultipleChoice("Koliko stranica ima trokut?",
+                    "3", new[] { "3", "4", "5" }, "Tocno! Trokut ima 3 stranice.", TaskPos1,
+                    "Tocno! Sljedeci trag skriven je uz policu uz istocni zid - dobro zaviri."),
+                Typed("Kvadrat ima sve stranice duge 5 cm. Koliki je opseg kvadrata? Upisi broj (u cm).",
+                    "20", "Tocno! Opseg = 4 x 5 = 20 cm.", TaskPos2,
+                    "Odlicno! Zadnji zadatak je u udaljenom kutu prostorije.", hidden: true),
+                Typed("Pravokutnik je dug 6 cm i sirok 4 cm. Kolika je njegova povrsina? Upisi broj (u cm2).",
+                    "24", "Tocno! Povrsina = 6 x 4 = 24 cm2.", TaskPos3,
                     "Sve je rijeseno! U sredini sobe zasjao je broncani kljuc - uzmi ga!")
             }
         }
     };
 
-    private static TaskConfig MultipleChoice(string question, string answer, string[] choices, string correctFeedback, Vector3 localPosition, string hintAfterSolving)
+    private static TaskConfig MultipleChoice(string question, string answer, string[] choices, string correctFeedback, Vector3 localPosition, string hintAfterSolving, bool hidden = false)
     {
         return new TaskConfig
         {
@@ -151,11 +163,12 @@ public static class Grade4LevelBuilder
             correctFeedback = correctFeedback,
             wrongFeedback = "Nije tocno. Pokusaj ponovno.",
             localPosition = localPosition,
-            hintAfterSolving = hintAfterSolving
+            hintAfterSolving = hintAfterSolving,
+            hidden = hidden
         };
     }
 
-    private static TaskConfig Typed(string question, string answer, string correctFeedback, Vector3 localPosition, string hintAfterSolving)
+    private static TaskConfig Typed(string question, string answer, string correctFeedback, Vector3 localPosition, string hintAfterSolving, bool hidden = false)
     {
         return new TaskConfig
         {
@@ -166,7 +179,8 @@ public static class Grade4LevelBuilder
             correctFeedback = correctFeedback,
             wrongFeedback = "Nije tocno. Pokusaj ponovno.",
             localPosition = localPosition,
-            hintAfterSolving = hintAfterSolving
+            hintAfterSolving = hintAfterSolving,
+            hidden = hidden
         };
     }
 
@@ -354,8 +368,11 @@ public static class Grade4LevelBuilder
 
     private static GameObject CreateTaskCube(Transform root, string label, Vector3 stationPosition, TaskConfig task, GameUIController uiController, LevelMaterials materials, out PuzzleBase puzzle)
     {
-        Vector3 cubeSize = new Vector3(0.9f, 0.9f, 0.9f);
-        Vector3 cubeCenter = stationPosition + new Vector3(0f, 1.0f, 0f); // hovers at ~eye level, easy to click
+        // Sakriveni predmet je manji i nisko uz pod (kao da je zaturen uz namjestaj),
+        // pa ga treba potraziti; vidljivi zadaci lebde u visini ociju s markerom.
+        Vector3 cubeSize = task.hidden ? new Vector3(0.45f, 0.45f, 0.45f) : new Vector3(0.9f, 0.9f, 0.9f);
+        float hoverHeight = task.hidden ? 0.28f : 1.0f;
+        Vector3 cubeCenter = stationPosition + new Vector3(0f, hoverHeight, 0f);
         Material cubeMaterial = task.kind == PuzzleKind.MultipleChoice ? materials.Board : materials.Terminal;
 
         GameObject cube = CreateCube(root, label + " Task", cubeCenter, Quaternion.identity, cubeSize, cubeMaterial);
@@ -398,9 +415,12 @@ public static class Grade4LevelBuilder
             puzzle = tp;
         }
 
-        // Small glowing marker on top so the cube reads as interactive.
-        GameObject marker = CreateCube(cube.transform, label + " Marker", cubeCenter + new Vector3(0f, cubeSize.y * 0.5f + 0.1f, 0f), Quaternion.identity, new Vector3(0.22f, 0.1f, 0.22f), materials.Marker);
-        RemoveCollider(marker);
+        // Marker na vrhu samo za vidljive zadatke; sakriveni namjerno nema oznaku.
+        if (!task.hidden)
+        {
+            GameObject marker = CreateCube(cube.transform, label + " Marker", cubeCenter + new Vector3(0f, cubeSize.y * 0.5f + 0.1f, 0f), Quaternion.identity, new Vector3(0.22f, 0.1f, 0.22f), materials.Marker);
+            RemoveCollider(marker);
+        }
 
         return cube;
     }
@@ -476,6 +496,7 @@ public static class Grade4LevelBuilder
         MessageInteractable interactable = item.AddComponent<MessageInteractable>();
         interactable.promptText = "Pregledaj";
         interactable.messageText = message;
+        interactable.messageDuration = 7f;
         interactable.uiController = uiController;
     }
 
@@ -541,6 +562,7 @@ public static class Grade4LevelBuilder
         MessageInteractable interactable = prop.AddComponent<MessageInteractable>();
         interactable.promptText = prompt;
         interactable.messageText = message;
+        interactable.messageDuration = 8f; // tragovi ostaju dulje da ih dijete stigne procitati
         interactable.uiController = uiController;
     }
 
@@ -793,6 +815,7 @@ public static class Grade4LevelBuilder
         scaler.matchWidthOrHeight = 0.5f;
 
         GameUIController uiController = canvasObject.AddComponent<GameUIController>();
+        uiController.defaultMessageDuration = 6f; // dulji prikaz poruka/feedbacka (feedback profesora)
 
         Text crosshair = CreateUIText(canvasObject.transform, "Crosshair", "+", font, 28, Color.white, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(40f, 40f));
         crosshair.raycastTarget = false;

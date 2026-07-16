@@ -9,6 +9,9 @@ public class MessageInteractable : MonoBehaviour, IInteractable
     [TextArea]
     public string messageText = "Ovdje možeš nešto naučiti.";
 
+    [Tooltip("Koliko dugo (sekundi) poruka ostaje na ekranu. 0 = koristi zadano trajanje iz GameUIControllera.")]
+    public float messageDuration = 6f;
+
     public GameUIController uiController;
     public UnityEvent OnInteracted = new UnityEvent();
 
@@ -20,7 +23,14 @@ public class MessageInteractable : MonoBehaviour, IInteractable
 
     public void Interact(PlayerInteractor interactor)
     {
-        uiController?.ShowMessage(messageText);
+        if (messageDuration > 0f)
+        {
+            uiController?.ShowMessage(messageText, messageDuration);
+        }
+        else
+        {
+            uiController?.ShowMessage(messageText);
+        }
 
         if (doorToUnlock != null)
         {
