@@ -26,6 +26,20 @@ public class EscapeRoomDoor : MonoBehaviour, IInteractable
     public Vector3 openEulerOffset = new Vector3(0f, 95f, 0f);
     public float openSpeed = 5f;
 
+    [Header("Audio")]
+    [Tooltip("Zvuk otvaranja vrata.")]
+    public AudioClip openClip;
+    [Tooltip("Zvuk zatvaranja vrata.")]
+    public AudioClip closeClip;
+    [Tooltip("Zvuk kad su vrata zakljucana (pokusaj otvaranja).")]
+    public AudioClip lockedClip;
+    [Tooltip("Zvuk otkljucavanja (kad se vrata otkljucaju).")]
+    public AudioClip unlockClip;
+    [Range(0f, 1f)]
+    public float volume = 0.85f;
+
+    private AudioSource audioSource;
+
     private bool isLocked;
     private bool isOpen;
     private Quaternion closedRotation;
@@ -40,6 +54,23 @@ public class EscapeRoomDoor : MonoBehaviour, IInteractable
         closedRotation = transform.localRotation;
         openRotation = Quaternion.Euler(transform.localEulerAngles + openEulerOffset);
         isLocked = startsLocked || (requiredPuzzle != null && !requiredPuzzle.IsSolved);
+
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+        }
+        audioSource.playOnAwake = false;
+        audioSource.loop = false;
+        audioSource.spatialBlend = 1f; // 3D zvuk vezan uz poziciju vrata
+    }
+
+    private void PlayClip(AudioClip clip)
+    {
+        if (clip != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(clip, volume);
+        }
     }
 
     private void OnEnable()
@@ -76,6 +107,7 @@ public class EscapeRoomDoor : MonoBehaviour, IInteractable
     {
         if (isLocked)
         {
+            PlayClip(lockedClip);
             uiController?.ShowMessage(lockedMessage, messageDuration);
             return;
         }
@@ -96,7 +128,12 @@ public class EscapeRoomDoor : MonoBehaviour, IInteractable
 
     public void Unlock()
     {
+        bool wasLocked = isLocked;
         isLocked = false;
+        if (wasLocked)
+        {
+            PlayClip(unlockClip);
+        }
     }
 
     public void Lock()
@@ -107,15 +144,20 @@ public class EscapeRoomDoor : MonoBehaviour, IInteractable
 
     public void Open()
     {
-        if (!isLocked)
+        if (!isLocked && !isOpen)
         {
             isOpen = true;
+            PlayClip(openClip);
         }
     }
 
     public void Close()
     {
-        isOpen = false;
+        if (isOpen)
+        {
+            isOpen = false;
+            PlayClip(closeClip);
+        }
     }
 
     public void UnlockAndOpen()

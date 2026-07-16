@@ -32,6 +32,16 @@ public static class Grade4LevelBuilder
     private const string MaterialsFolder = GeneratedRoot + "/Materials";
     private const string InputReferencesFolder = GeneratedRoot + "/InputReferences";
 
+    // Audio (koraci + ormar). Putanje unutar Assets.
+    private const string FootstepWalkFolder = "Assets/Audio/SFX/Footsteps - Essentials/Footsteps_Tile/Footsteps_Tile_Walk";
+    private const string FootstepRunFolder = "Assets/Audio/SFX/Footsteps - Essentials/Footsteps_Tile/Footsteps_Tile_Run";
+    private const string CabinetOpenClipPath = "Assets/Audio/SFX/Door, Cabinet and Locker Sound Pack (Free)/FREE VERSION/Open Close Metal Door Locker Cabinet Box 3.wav";
+    private const string CabinetCloseClipPath = "Assets/Audio/SFX/Door, Cabinet and Locker Sound Pack (Free)/FREE VERSION/Close Cabinet Cupboard 1.wav";
+    private const string DoorOpenClipPath = "Assets/Audio/SFX/Door, Cabinet and Locker Sound Pack (Free)/FREE VERSION/Open Door 7.wav";
+    private const string DoorCloseClipPath = "Assets/Audio/SFX/Door, Cabinet and Locker Sound Pack (Free)/FREE VERSION/Close Door 6.wav";
+    private const string DoorLockedClipPath = "Assets/Audio/SFX/Door, Cabinet and Locker Sound Pack (Free)/FREE VERSION/Locked Door 2.wav";
+    private const string DoorUnlockClipPath = "Assets/Audio/SFX/Door, Cabinet and Locker Sound Pack (Free)/FREE VERSION/Unlock 1.wav";
+
     private const float WallHeight = 4.2f;
     private const float WallThickness = 0.3f;
     private const float DoorWidth = 2.4f;
@@ -441,8 +451,8 @@ public static class Grade4LevelBuilder
 
     private static void CreateFurnitureForRoom(Transform root, string subject, Vector3 center, LevelMaterials materials, GameUIController uiController)
     {
-        CreateFurniturePlaceholder(root, subject + " Ormar (zapad)", center + new Vector3(-7.2f, 1.1f, -2.5f), new Vector3(0.6f, 2.2f, 1.4f), materials.Furniture, "Mjesto za ormar - ovdje ce kasnije doci 3D model.", uiController);
-        CreateFurniturePlaceholder(root, subject + " Ormar (istok)", center + new Vector3(7.2f, 1.1f, -2.5f), new Vector3(0.6f, 2.2f, 1.4f), materials.Furniture, "Mjesto za ormar - ovdje ce kasnije doci 3D model.", uiController);
+        CreateCabinet(root, subject + " Ormar (zapad)", center + new Vector3(-7.2f, 1.1f, -2.5f), new Vector3(0.6f, 2.2f, 1.4f), materials.Furniture, "Zavirujes u ormar... police su prazne, ali negdje ovdje krije se trag.", uiController);
+        CreateCabinet(root, subject + " Ormar (istok)", center + new Vector3(7.2f, 1.1f, -2.5f), new Vector3(0.6f, 2.2f, 1.4f), materials.Furniture, "Otvaras ormar i skripa te podsjeti da jos zadataka ceka.", uiController);
         CreateFurniturePlaceholder(root, subject + " Polica (zapad)", center + new Vector3(-7.1f, 1.1f, 4.5f), new Vector3(0.5f, 2.2f, 2.2f), materials.Furniture, "Mjesto za policu s knjigama (placeholder).", uiController);
         CreateFurniturePlaceholder(root, subject + " Polica (istok)", center + new Vector3(7.1f, 1.1f, 4.5f), new Vector3(0.5f, 2.2f, 2.2f), materials.Furniture, "Mjesto za policu s knjigama (placeholder).", uiController);
         CreateFurniturePlaceholder(root, subject + " Stol (JZ)", center + new Vector3(-6.0f, 0.45f, -5.4f), new Vector3(1.8f, 0.9f, 0.9f), materials.Furniture, "Mjesto za ucenicki stol (placeholder).", uiController);
@@ -467,6 +477,62 @@ public static class Grade4LevelBuilder
         interactable.promptText = "Pregledaj";
         interactable.messageText = message;
         interactable.uiController = uiController;
+    }
+
+    // Pravi ormar: kocka s CabinetInteractable komponentom koja pusta open/close
+    // zvuk iz sound packa. Kada nabavis 3D model ormara, zamijeni CreateCube
+    // instanciranjem prefaba i dodijeli mu doorPivot.
+    private static void CreateCabinet(Transform root, string name, Vector3 position, Vector3 size, Material material, string openMessage, GameUIController uiController)
+    {
+        GameObject item = CreateCube(root, name, position, Quaternion.identity, size, material);
+
+        CabinetInteractable cabinet = item.AddComponent<CabinetInteractable>();
+        cabinet.uiController = uiController;
+        cabinet.openMessage = openMessage;
+        cabinet.openClip = AssetDatabase.LoadAssetAtPath<AudioClip>(CabinetOpenClipPath);
+        cabinet.closeClip = AssetDatabase.LoadAssetAtPath<AudioClip>(CabinetCloseClipPath);
+
+        if (cabinet.openClip == null || cabinet.closeClip == null)
+        {
+            Debug.LogWarning("CreateCabinet ne moze pronaci zvukove ormara. Provjeri putanje u Assets/Audio/SFX/Door, Cabinet and Locker Sound Pack (Free).");
+        }
+    }
+
+    // Dodaje FootstepAudio na igraca i puni walk/run isjecke iz Footsteps packa.
+    private static void AttachFootsteps(GameObject player)
+    {
+        FootstepAudio footsteps = player.AddComponent<FootstepAudio>();
+        footsteps.walkClips = LoadClipsFromFolder(FootstepWalkFolder);
+        footsteps.runClips = LoadClipsFromFolder(FootstepRunFolder);
+
+        if (footsteps.walkClips == null || footsteps.walkClips.Length == 0)
+        {
+            Debug.LogWarning("AttachFootsteps ne moze pronaci zvukove koraka u " + FootstepWalkFolder + ". Koraci nece svirati dok se ne dodijele isjecci.");
+        }
+    }
+
+    private static AudioClip[] LoadClipsFromFolder(string folder)
+    {
+        if (!AssetDatabase.IsValidFolder(folder))
+        {
+            return new AudioClip[0];
+        }
+
+        string[] guids = AssetDatabase.FindAssets("t:AudioClip", new[] { folder });
+        List<AudioClip> clips = new List<AudioClip>();
+
+        foreach (string guid in guids)
+        {
+            string path = AssetDatabase.GUIDToAssetPath(guid);
+            AudioClip clip = AssetDatabase.LoadAssetAtPath<AudioClip>(path);
+            if (clip != null)
+            {
+                clips.Add(clip);
+            }
+        }
+
+        clips.Sort((a, b) => string.CompareOrdinal(a.name, b.name));
+        return clips.ToArray();
     }
 
     private static void CreateHintProp(Transform root, string name, Vector3 position, Vector3 size, Material material, string prompt, string message, GameUIController uiController)
@@ -648,6 +714,10 @@ public static class Grade4LevelBuilder
         door.openEulerOffset = openOffset;
         door.unlockWhenPuzzleSolved = true;
         door.openWhenPuzzleSolved = requiredPuzzle != null;
+        door.openClip = AssetDatabase.LoadAssetAtPath<AudioClip>(DoorOpenClipPath);
+        door.closeClip = AssetDatabase.LoadAssetAtPath<AudioClip>(DoorCloseClipPath);
+        door.lockedClip = AssetDatabase.LoadAssetAtPath<AudioClip>(DoorLockedClipPath);
+        door.unlockClip = AssetDatabase.LoadAssetAtPath<AudioClip>(DoorUnlockClipPath);
         return door;
     }
 
@@ -697,6 +767,8 @@ public static class Grade4LevelBuilder
         CarryController carryController = player.AddComponent<CarryController>();
         carryController.playerCamera = camera;
         carryController.holdPoint = holdPoint.transform;
+
+        AttachFootsteps(player);
 
         return player;
     }

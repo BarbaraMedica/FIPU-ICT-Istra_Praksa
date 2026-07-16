@@ -6,6 +6,16 @@
 [Bb]uilds/
 [Ll]ogs/
 UserSettings/
+[Rr]ecordings/
+_Recovery/
+
+# Unity3D generated meta files
+*.pidb.meta
+*.pdb.meta
+*.mdb.meta
+
+# Unity3D generated file on crash reports
+crashlnk*
 
 # Memory captures
 MemoryCaptures/
@@ -25,6 +35,7 @@ MemoryCaptures/
 *.csproj
 *.unityproj
 *.sln
+*.slnx
 *.suo
 *.tmp
 *.user
@@ -36,6 +47,32 @@ Thumbs.db
 
 # Crash reports
 sysinfo.txt
+*.stackdump
 
 # Unity cache
 Library/
+
+# Neiskoristeni audio asseti (zasad se koristi samo Footsteps_Tile).
+# Makni ove retke ako pocnes koristiti druge povrsine poda.
+Assets/Audio/SFX/Footsteps - Essentials/Footsteps_DirtyGround/
+Assets/Audio/SFX/Footsteps - Essentials/Footsteps_DirtyGround.meta
+Assets/Audio/SFX/Footsteps - Essentials/Footsteps_Grass/
+Assets/Audio/SFX/Footsteps - Essentials/Footsteps_Grass.meta
+Assets/Audio/SFX/Footsteps - Essentials/Footsteps_Gravel/
+Assets/Audio/SFX/Footsteps - Essentials/Footsteps_Gravel.meta
+Assets/Audio/SFX/Footsteps - Essentials/Footsteps_Leaves/
+Assets/Audio/SFX/Footsteps - Essentials/Footsteps_Leaves.meta
+Assets/Audio/SFX/Footsteps - Essentials/Footsteps_Metal/
+Assets/Audio/SFX/Footsteps - Essentials/Footsteps_Metal.meta
+Assets/Audio/SFX/Footsteps - Essentials/Footsteps_Mud/
+Assets/Audio/SFX/Footsteps - Essentials/Footsteps_Mud.meta
+Assets/Audio/SFX/Footsteps - Essentials/Footsteps_Rock/
+Assets/Audio/SFX/Footsteps - Essentials/Footsteps_Rock.meta
+Assets/Audio/SFX/Footsteps - Essentials/Footsteps_Sand/
+Assets/Audio/SFX/Footsteps - Essentials/Footsteps_Sand.meta
+Assets/Audio/SFX/Footsteps - Essentials/Footsteps_Snow/
+Assets/Audio/SFX/Footsteps - Essentials/Footsteps_Snow.meta
+Assets/Audio/SFX/Footsteps - Essentials/Footsteps_Water/
+Assets/Audio/SFX/Footsteps - Essentials/Footsteps_Water.meta
+Assets/Audio/SFX/Footsteps - Essentials/Footsteps_Wood/
+Assets/Audio/SFX/Footsteps - Essentials/Footsteps_Wood.meta

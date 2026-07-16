@@ -19,6 +19,14 @@ public static class EscapeRoomPrototypeBuilder
     private const string MaterialsFolder = GeneratedRoot + "/Materials";
     private const string InputReferencesFolder = GeneratedRoot + "/InputReferences";
 
+    // Audio koraka (koristi Footsteps - Essentials pack).
+    private const string FootstepWalkFolder = "Assets/Audio/SFX/Footsteps - Essentials/Footsteps_Tile/Footsteps_Tile_Walk";
+    private const string FootstepRunFolder = "Assets/Audio/SFX/Footsteps - Essentials/Footsteps_Tile/Footsteps_Tile_Run";
+    private const string DoorOpenClipPath = "Assets/Audio/SFX/Door, Cabinet and Locker Sound Pack (Free)/FREE VERSION/Open Door 7.wav";
+    private const string DoorCloseClipPath = "Assets/Audio/SFX/Door, Cabinet and Locker Sound Pack (Free)/FREE VERSION/Close Door 6.wav";
+    private const string DoorLockedClipPath = "Assets/Audio/SFX/Door, Cabinet and Locker Sound Pack (Free)/FREE VERSION/Locked Door 2.wav";
+    private const string DoorUnlockClipPath = "Assets/Audio/SFX/Door, Cabinet and Locker Sound Pack (Free)/FREE VERSION/Unlock 1.wav";
+
     private const float WallHeight = 4f;
     private const float WallThickness = 0.3f;
     private const float DoorWidth = 2.4f;
@@ -544,6 +552,10 @@ public static class EscapeRoomPrototypeBuilder
         door.openEulerOffset = openOffset;
         door.unlockWhenPuzzleSolved = true;
         door.openWhenPuzzleSolved = requiredPuzzle != null;
+        door.openClip = AssetDatabase.LoadAssetAtPath<AudioClip>(DoorOpenClipPath);
+        door.closeClip = AssetDatabase.LoadAssetAtPath<AudioClip>(DoorCloseClipPath);
+        door.lockedClip = AssetDatabase.LoadAssetAtPath<AudioClip>(DoorLockedClipPath);
+        door.unlockClip = AssetDatabase.LoadAssetAtPath<AudioClip>(DoorUnlockClipPath);
         return door;
     }
 
@@ -626,7 +638,46 @@ public static class EscapeRoomPrototypeBuilder
         interactor.interactKeyHint = "E";
         interactor.interactionRange = 3.2f;
 
+        AttachFootsteps(player);
+
         return player;
+    }
+
+    // Dodaje FootstepAudio na igraca i puni walk/run isjecke iz Footsteps packa.
+    private static void AttachFootsteps(GameObject player)
+    {
+        FootstepAudio footsteps = player.AddComponent<FootstepAudio>();
+        footsteps.walkClips = LoadClipsFromFolder(FootstepWalkFolder);
+        footsteps.runClips = LoadClipsFromFolder(FootstepRunFolder);
+
+        if (footsteps.walkClips == null || footsteps.walkClips.Length == 0)
+        {
+            Debug.LogWarning("AttachFootsteps ne moze pronaci zvukove koraka u " + FootstepWalkFolder + ". Koraci nece svirati dok se ne dodijele isjecci.");
+        }
+    }
+
+    private static AudioClip[] LoadClipsFromFolder(string folder)
+    {
+        if (!AssetDatabase.IsValidFolder(folder))
+        {
+            return new AudioClip[0];
+        }
+
+        string[] guids = AssetDatabase.FindAssets("t:AudioClip", new[] { folder });
+        List<AudioClip> clips = new List<AudioClip>();
+
+        foreach (string guid in guids)
+        {
+            string path = AssetDatabase.GUIDToAssetPath(guid);
+            AudioClip clip = AssetDatabase.LoadAssetAtPath<AudioClip>(path);
+            if (clip != null)
+            {
+                clips.Add(clip);
+            }
+        }
+
+        clips.Sort((a, b) => string.CompareOrdinal(a.name, b.name));
+        return clips.ToArray();
     }
 
     private static GameUIController CreateUI(Transform root)
